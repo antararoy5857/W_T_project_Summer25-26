@@ -1,0 +1,451 @@
+<!doctype html>
+<html>
+
+<head>
+
+    <title>Student Panel</title>
+    <link rel="stylesheet" href="style.css">
+   
+
+</head>
+
+
+<body>
+
+    <h1>Student Assignment Management System</h1>
+
+    <hr>
+
+
+    <!-- Student Information -->
+
+    <fieldset>
+
+        <legend><b>Student Information</b></legend>
+
+        <table cellpadding="10">
+
+            <tr>
+
+                <td><b>Student Name</b></td>
+                <td>: Md. Shihab Shikdar</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Student ID</b></td>
+                <td>: 23-54523-3</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Department</b></td>
+                <td>: Computer Science and Engineering</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Role</b></td>
+                <td>: Student</td>
+
+            </tr>
+
+        </table>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <!-- Navigation -->
+
+    <fieldset>
+
+        <legend><b>Student Menu</b></legend>
+
+        <table cellpadding="10">
+
+            <tr>
+
+                <td>
+                    <a href="#dashboard">Dashboard</a>
+                </td>
+
+                <td>
+                    <a href="#assignments">View Assignments</a>
+                </td>
+
+                <td>
+                    <a href="#submit">Submit Assignment</a>
+                </td>
+
+                <td>
+                    <a href="#results">View Results</a>
+                </td>
+
+                <td>
+                    <a href="#profile">Profile</a>
+                </td>
+
+            </tr>
+
+        </table>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <!-- Dashboard -->
+
+    <fieldset id="dashboard">
+
+        <legend><b>Dashboard</b></legend>
+
+        <table border="1" cellpadding="15" width="80%">
+
+            <tr>
+
+                <th>Total Assignments</th>
+
+                <th>Submitted</th>
+
+                <th>Pending</th>
+
+                <th>Results Published</th>
+
+            </tr>
+
+
+            <tr>
+
+                <td align="center">8</td>
+
+                <td align="center">5</td>
+
+                <td align="center">3</td>
+
+                <td align="center">4</td>
+
+            </tr>
+
+        </table>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <!-- View Assignments -->
+
+    <fieldset id="assignments">
+
+        <legend><b>View Assignments</b></legend>
+
+
+        <table border="1" cellpadding="12" width="100%">
+
+            <tr>
+
+                <th>Assignment</th>
+
+                <th>Course</th>
+
+                <th>Deadline</th>
+
+                <th>Total Marks</th>
+
+                <th>Status</th>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Responsive Web Design</td>
+
+                <td>Web Technology</td>
+
+                <td>20 August 2026</td>
+
+                <td>20</td>
+
+                <td class="pending">Pending</td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>PHP Form Validation</td>
+
+                <td>Web Technology</td>
+
+                <td>25 August 2026</td>
+
+                <td>20</td>
+
+                <td class="submitted">Submitted</td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Database Design</td>
+
+                <td>Database</td>
+
+                <td>28 August 2026</td>
+
+                <td>15</td>
+
+                <td class="pending">Pending</td>
+
+            </tr>
+
+
+        </table>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <!-- Submit Assignment -->
+
+    <fieldset id="submit">
+
+        <legend><b>Submit Assignment</b></legend>
+
+
+        <form>
+
+            <table cellpadding="10">
+
+                <tr>
+
+                    <td>
+                        <b>Select Assignment</b>
+                    </td>
+
+                    <td>:</td>
+
+                    <td>
+
+                        <select name="assignment">
+
+                            <option>Select Assignment</option>
+
+                            <option>Responsive Web Design</option>
+
+                            <option>PHP Form Validation</option>
+
+                            <option>Database Design</option>
+
+                        </select>
+
+                    </td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td>
+                        <b>Upload File</b>
+                    </td>
+
+                    <td>:</td>
+
+                    <td>
+                        <input type="file" name="assignmentFile">
+                    </td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td>
+                        <b>Comment</b>
+                    </td>
+
+                    <td>:</td>
+
+                    <td>
+
+                        <textarea
+                            name="comment"
+                            rows="4"
+                            cols="35"
+                            placeholder="Write your comment">
+                        </textarea>
+
+                    </td>
+
+                </tr>
+
+
+                <tr>
+
+                    <td></td>
+
+                    <td></td>
+
+                    <td>
+
+                        <input
+                            type="submit"
+                            value="Submit Assignment"
+                            class="submitButton">
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </form>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <!-- Results -->
+
+    <fieldset id="results">
+
+        <legend><b>View Results</b></legend>
+
+
+        <table border="1" cellpadding="12" width="100%">
+
+            <tr>
+
+                <th>Assignment</th>
+
+                <th>Course</th>
+
+                <th>Obtained Marks</th>
+
+                <th>Total Marks</th>
+
+                <th>Teacher Feedback</th>
+
+                <th>Status</th>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Responsive Web Design</td>
+
+                <td>Web Technology</td>
+
+                <td>18</td>
+
+                <td>20</td>
+
+                <td>Good Work</td>
+
+                <td class="result">Published</td>
+
+            </tr>
+
+
+            <tr>
+
+                <td>Database Design</td>
+
+                <td>Database</td>
+
+                <td>13</td>
+
+                <td>15</td>
+
+                <td>Very Good</td>
+
+                <td class="result">Published</td>
+
+            </tr>
+
+
+        </table>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <!-- Profile -->
+
+    <fieldset id="profile">
+
+        <legend><b>Student Profile</b></legend>
+
+        <table cellpadding="10">
+
+            <tr>
+
+                <td><b>Name</b></td>
+                <td>: Md. Shihab Shikdar</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Email</b></td>
+                <td>: shihab@gmail.com</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Phone</b></td>
+                <td>: +880-171717155311</td>
+
+            </tr>
+
+            <tr>
+
+                <td><b>Department</b></td>
+                <td>: CSE</td>
+
+            </tr>
+
+        </table>
+
+    </fieldset>
+
+
+    <br>
+
+
+    <div class="footer">
+
+        <p>
+            Student Assignment Management System
+        </p>
+
+        <p>
+            Student Panel
+        </p>
+
+    </div>
+
+
+</body>
+
+</html>
