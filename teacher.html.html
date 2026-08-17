@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Module - Student Assignment Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: beige;
+            color: maroon black;
+            margin: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: orchid;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        fieldset {
+            border: 1px solid beige;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background-color: whitesmoke;
+        }
+
+        legend {
+            font-weight: bold;
+            color: navy;
+            padding: 0 10px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            padding: 8px;
+            border: 1px solid wheat;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid beige;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: beige;
+            color: blue;
+        }
+
+        .btn {
+            background-color: blueviolet;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: powderblue;
+        }
+
+        .btn-publish {
+            background-color: blueviolet ;
+        }
+
+        .btn-publish:hover {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Teacher Module</h1>
+
+    <!-- Feature 1: Create Assignment -->
+    <form method="post" action="">
+        <fieldset>
+            <legend>Create Assignment</legend>
+
+            <div class="form-group">
+                <label for="course">Select Course:</label>
+                <select id="course" name="course" required>
+                    <option value="">-- Select Course --</option>
+                    <option value="CSC3215">CSC 3215: Web Technologies</option>
+                    <option value="CSC2210">CSC 2210: Object Oriented Programming</option>
+                    <option value="CSC3105">CSC 3105: Database Systems</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Assignment Title:</label>
+                <input type="text" id="title" name="title" placeholder="e.g., Assignment 1 - HTML & CSS" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Assignment Description:</label>
+                <textarea id="description" name="description" placeholder="Enter assignment instructions..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="dueDate">Due Date:</label>
+                <input type="date" id="dueDate" name="dueDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="totalMarks">Total Marks:</label>
+                <input type="number" id="totalMarks" name="totalMarks" min="1" max="100" placeholder="e.g., 20" required>
+            </div>
+
+            <button type="submit" class="btn">Create & Publish Assignment</button>
+        </fieldset>
+    </form>
+
+    <!-- Feature 2 & 3: Review Submissions & Publish Marks -->
+    <form method="post" action="">
+        <fieldset>
+            <legend>Review Submissions & Publish Marks</legend>
+
+            <div class="form-group">
+                <label for="filterAssignment">Select Assignment to Evaluate:</label>
+                <select id="filterAssignment" name="filterAssignment">
+                    <option value="1">Assignment 1 - HTML & CSS (Web Technologies)</option>
+                    <option value="2">Assignment 2 - PHP Basics (Web Technologies)</option>
+                </select>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Submission Date</th>
+                        <th>Submitted File</th>
+                        <th>Marks Obtained</th>
+                        <th>Feedback</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>23-54523-3</td>
+                        <td>Md. Shihab Shikdar</td>
+                        <td>2026-05-10</td>
+                        <td><a href="#" target="_blank">view_submission.pdf</a></td>
+                        <td><input type="number" name="marks[]" min="0" max="20" placeholder="Marks"></td>
+                        <td><input type="text" name="feedback[]" placeholder="Good work!"></td>
+                    </tr>
+                    <tr>
+                        <td>24-56434-1</td>
+                        <td>Md Momen Sha</td>
+                        <td>2026-05-11</td>
+                        <td><a href="#" target="_blank">assignment1_momen.zip</a></td>
+                        <td><input type="number" name="marks[]" min="0" max="20" placeholder="Marks"></td>
+                        <td><input type="text" name="feedback[]" placeholder="Well formatted."></td>
+                    </tr>
+                    <tr>
+                        <td>22-48652-3</td>
+                        <td>Antara Roy</td>
+                        <td>2026-05-11</td>
+                        <td><a href="#" target="_blank">antara_web_task.zip</a></td>
+                        <td><input type="number" name="marks[]" min="0" max="20" placeholder="Marks"></td>
+                        <td><input type="text" name="feedback[]" placeholder="Excellent submission."></td>
+                    </tr>
+                </tbody>
+            </table>
+            <br>
+            <button type="submit" class="btn btn-publish">Save & Publish Marks</button>
+        </fieldset>
+    </form>
+</div>
+
+</body>
+</html>
