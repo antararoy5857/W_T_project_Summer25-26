@@ -1,0 +1,170 @@
+body
+{
+    background-color:whitesmoke;
+
+    font-family: Arial;
+
+    margin: 30px;
+}
+
+
+h1
+{
+    text-align: center;
+
+    color:rgb(33, 33, 238);
+}
+
+
+hr
+{
+    border: 1px solid rgb(9, 9, 135);
+}
+
+
+fieldset
+{
+    background-color: white;
+
+    border: 1px solid rgb(59, 23, 203);
+
+    border-radius: 8px;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+}
+
+
+legend
+{
+    color:rgb(77, 77, 238);
+
+    font-size: 18px;
+}
+
+
+table
+{
+    border-collapse: collapse;
+}
+
+
+th
+{
+    background-color: #4b3fc7;
+
+    color: white;
+
+    padding: 12px;
+}
+
+
+td
+{
+    padding: 10px;
+}
+
+
+a
+{
+    text-decoration: none;
+
+    color: #4b3fc7;
+
+    font-weight: bold;
+
+    padding: 8px;
+}
+
+
+a:hover
+{
+    color: red;
+}
+
+
+.pending
+{
+    color:rgb(210, 7, 7);
+
+    font-weight: bold;
+}
+
+
+.submitted
+{
+    color: green;
+
+    font-weight: bold;
+}
+
+
+.result
+{
+    color:green;
+
+    font-weight: bold;
+}
+
+
+select
+{
+    padding: 8px;
+
+    width: 250px;
+}
+
+
+input[type="file"]
+{
+    padding: 5px;
+}
+
+
+textarea
+{
+    padding: 8px;
+}
+
+
+.submitButton
+{
+    background-color: rgb(72, 25, 239);
+
+    color: white;
+
+    border: none;
+
+    padding: 10px 18px;
+
+    border-radius: 5px;
+
+    cursor: pointer;
+}
+
+
+.submitButton:hover
+{
+    background-color:rgb(0, 0, 251);
+}
+
+
+.footer
+{
+    text-align: center;
+
+    background-color: rgb(21, 21, 165);
+
+    color: white;
+
+    padding: 15px;
+
+    border-radius: 8px;
+}
+
+
+.footer p
+{
+    margin: 5px;
+}
