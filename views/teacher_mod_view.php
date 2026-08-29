@@ -3,178 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Module - Student Assignment Management System</title>
+    <title>Teacher Advanced Module - Student Assignment Management System</title>
+    <link rel="stylesheet" href="views/style.css">
     <script src="views/script.js" defer></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: beige;
-            color: #333;
-            margin: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            color: orchid;
-            margin-bottom: 20px;
-        }
-
-        .container {
-            max-width: 1050px;
-            margin: 0 auto;
-        }
-
-        fieldset {
-            border: 1px solid wheat;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            background-color: whitesmoke;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        legend {
-            font-weight: bold;
-            color: navy;
-            padding: 0 10px;
-            font-size: 1.2em;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #444;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        input[type="file"],
-        select,
-        textarea {
-            padding: 9px;
-            border: 1px solid wheat;
-            border-radius: 4px;
-            font-size: 14px;
-            background-color: #fff;
-        }
-
-        textarea {
-            resize: vertical;
-            height: 80px;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: blueviolet;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background-color: #fff;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            vertical-align: middle;
-        }
-
-        th {
-            background-color: beige;
-            color: blue;
-            font-size: 14px;
-        }
-
-        /* Status Badges */
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-        }
-
-        .badge-ontime {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .badge-late {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge-pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .btn {
-            background-color: blueviolet;
-            color: white;
-            padding: 10px 18px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            margin-right: 10px;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background-color: powderblue;
-            color: #000;
-        }
-
-        .btn-publish {
-            background-color: green;
-        }
-
-        .btn-publish:hover {
-            background-color: darkgreen;
-            color: white;
-        }
-
-        .error-message {
-            color: red;
-            font-size: 12px;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .small-input {
-            width: 80px;
-        }
-    </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Teacher Module — Assignment Management</h1>
-    <p style="text-align: center;"><a href="index.php?page=student">Go to Student Panel</a> | <a href="index.php?page=teacher">Teacher Standard Panel</a></p>
+<!-- Header & Navigation Bar -->
+<div class="navbar">
+    <div class="nav-brand">👨‍🏫 Teacher Portal (Advanced)</div>
+    <div class="nav-links">
+        <a href="index.php?page=teacher">Standard Panel</a>
+        <a href="index.php?page=teacher_mod" class="active">Advanced Evaluation Panel</a>
+        <a href="index.php?page=student">Student View Preview</a>
+    </div>
+    <div class="nav-user">
+        <span>Logged in as: <b><?php echo htmlspecialchars($_SESSION['user']['name'] ?? 'Faculty'); ?></b> (Teacher)</span>
+        <a href="index.php?action=logout" class="btn-logout">Logout</a>
+    </div>
+</div>
+
+<div class="container main-container">
+    <h1>Teacher Module — Advanced Assignment Evaluation</h1>
+
+    <?php if (isset($_SESSION['flash_success'])): ?>
+        <div class="alert alert-success">
+            <?php echo htmlspecialchars($_SESSION['flash_success']); unset($_SESSION['flash_success']); ?>
+        </div>
+    <?php endif; ?>
 
     <!-- 1. Create Assignment Form -->
     <form id="createAssignmentForm" method="post" action="index.php?action=create_assignment" enctype="multipart/form-data">
@@ -212,7 +68,7 @@
                 <div class="form-group">
                     <label for="dueDate">Due Date:</label>
                     <input type="date" id="dueDate" name="dueDate" required>
-                    <div class="error-message" id="dateError">Due date cannot be in the past!</div>
+                    <div class="error-message" id="dateError" style="display:none; color:red; font-size:12px;">Due date cannot be in the past!</div>
                 </div>
 
                 <!-- Teacher Instruction/Rubric Upload -->
@@ -222,7 +78,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn">Create Assignment</button>
+            <button type="submit" class="submitButton">Create Assignment</button>
         </fieldset>
     </form>
 
@@ -284,14 +140,14 @@
                         <td><span class="badge <?php echo $badgeClass; ?>"><?php echo htmlspecialchars($sub['status']); ?></span></td>
                         <td>
                             <?php if ($sub['file'] !== 'Not Submitted'): ?>
-                                <a href="#" target="_blank"><?php echo htmlspecialchars($sub['file']); ?></a>
+                                <a href="#" onclick="alert('Viewing submission file: <?php echo htmlspecialchars($sub['file']); ?>'); return false;"><?php echo htmlspecialchars($sub['file']); ?></a>
                             <?php else: ?>
                                 <em>Not Submitted</em>
                             <?php endif; ?>
                         </td>
-                        <td><input type="number" class="small-input mark-field" name="marks[]" min="0" max="20" placeholder="0-20" <?php if ($sub['status'] === 'Pending') echo 'disabled'; ?>></td>
-                        <td><input type="text" name="feedback[]" placeholder="<?php echo ($sub['status'] === 'Pending') ? 'N/A' : 'Feedback'; ?>" <?php if ($sub['status'] === 'Pending') echo 'disabled'; ?>></td>
-                        <td style="text-align:center;"><input type="checkbox" name="resubmit[]" value="<?php echo htmlspecialchars($sub['id']); ?>" <?php if ($sub['status'] === 'Pending') echo 'disabled'; ?>></td>
+                        <td><input type="number" class="small-input mark-field" name="marks[]" min="0" max="20" placeholder="0-20" value="<?php echo htmlspecialchars($sub['marks'] ?? ''); ?>" <?php if ($sub['status'] === 'Pending') echo 'disabled'; ?>></td>
+                        <td><input type="text" name="feedback[]" placeholder="<?php echo ($sub['status'] === 'Pending') ? 'N/A' : 'Feedback'; ?>" value="<?php echo htmlspecialchars($sub['feedback'] ?? ''); ?>" <?php if ($sub['status'] === 'Pending') echo 'disabled'; ?>></td>
+                        <td style="text-align:center;"><input type="checkbox" name="resubmit[]" value="<?php echo htmlspecialchars($sub['id']); ?>" <?php if (!empty($sub['resubmit_allowed'])) echo 'checked'; ?> <?php if ($sub['status'] === 'Pending') echo 'disabled'; ?>></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -299,61 +155,12 @@
             <br>
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <button type="submit" name="action" value="draft" class="btn">Save as Draft</button>
-                    <button type="submit" name="action" value="publish" class="btn btn-publish">Publish Marks</button>
+                    <button type="submit" name="action" value="publish" class="submitButton btn-publish">Save & Publish Marks</button>
                 </div>
             </div>
         </fieldset>
     </form>
 </div>
-
-<script>
-    // 1. Date Validation for Assignment Creation
-    document.getElementById('createAssignmentForm').addEventListener('submit', function(event) {
-        const dueDateInput = document.getElementById('dueDate').value;
-        if (dueDateInput) {
-            const dueDate = new Date(dueDateInput);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            if (dueDate < today) {
-                event.preventDefault();
-                document.getElementById('dateError').style.display = 'block';
-                return;
-            }
-        }
-        document.getElementById('dateError').style.display = 'none';
-    });
-
-    // 2. Filter Submissions Table Status-wise
-    function filterTable() {
-        const filter = document.getElementById('filterStatus').value;
-        const rows = document.querySelectorAll('#submissionTable tbody tr');
-
-        rows.forEach(row => {
-            if (filter === 'all') {
-                row.style.display = '';
-            } else if (row.classList.contains('row-' + filter)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    }
-
-    // 3. Mark Validation (Warning if obtained marks > max marks)
-    document.querySelectorAll('.mark-field').forEach(input => {
-        input.addEventListener('change', function() {
-            const val = parseFloat(this.value);
-            if (val > 20) {
-                alert('Warning: Marks cannot exceed Total Marks (20)!');
-                this.value = 20;
-            } else if (val < 0) {
-                this.value = 0;
-            }
-        });
-    });
-</script>
 
 </body>
 </html>

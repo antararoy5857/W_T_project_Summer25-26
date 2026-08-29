@@ -3,120 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Teacher Module - Student Assignment Management System</title>
+    <link rel="stylesheet" href="views/style.css">
     <script src="views/script.js" defer></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: beige;
-            color: black;
-            margin: 20px;
-        }
-
-        h1, h2 {
-            text-align: center;
-            color: orchid;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        fieldset {
-            border: 1px solid beige;
-            border-radius: 6px;
-            padding: 20px;
-            margin-bottom: 25px;
-            background-color: whitesmoke;
-        }
-
-        legend {
-            font-weight: bold;
-            color: navy;
-            padding: 0 10px;
-            font-size: 1.1em;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select,
-        textarea {
-            padding: 8px;
-            border: 1px solid wheat;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        textarea {
-            resize: vertical;
-            height: 80px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        table, th, td {
-            border: 1px solid beige;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: beige;
-            color: blue;
-        }
-
-        .btn {
-            background-color: blueviolet;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn:hover {
-            background-color: powderblue;
-        }
-
-        .btn-publish {
-            background-color: blueviolet ;
-        }
-
-        .btn-publish:hover {
-            background-color: green;
-        }
-    </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Teacher Module</h1>
-    <p style="text-align: center;"><a href="index.php?page=student">Go to Student Panel</a> | <a href="index.php?page=teacher_mod">Teacher Advanced Panel</a></p>
+<!-- Header & Navigation Bar -->
+<div class="navbar">
+    <div class="nav-brand">👨‍🏫 Teacher Portal</div>
+    <div class="nav-links">
+        <a href="index.php?page=teacher" class="active">Standard Panel</a>
+        <a href="index.php?page=teacher_mod">Advanced Evaluation Panel</a>
+        <a href="index.php?page=student">Student View Preview</a>
+    </div>
+    <div class="nav-user">
+        <span>Logged in as: <b><?php echo htmlspecialchars($_SESSION['user']['name'] ?? 'Faculty'); ?></b> (Teacher)</span>
+        <a href="index.php?action=logout" class="btn-logout">Logout</a>
+    </div>
+</div>
+
+<div class="container main-container">
+    <h1>Teacher Assignment Management Module</h1>
+
+    <?php if (isset($_SESSION['flash_success'])): ?>
+        <div class="alert alert-success">
+            <?php echo htmlspecialchars($_SESSION['flash_success']); unset($_SESSION['flash_success']); ?>
+        </div>
+    <?php endif; ?>
 
     <!-- Feature 1: Create Assignment -->
     <form method="post" action="index.php?action=create_assignment">
         <fieldset>
-            <legend>Create Assignment</legend>
+            <legend>Create & Publish New Course Assignment</legend>
 
             <div class="form-group">
                 <label for="course">Select Course:</label>
@@ -130,12 +48,12 @@
 
             <div class="form-group">
                 <label for="title">Assignment Title:</label>
-                <input type="text" id="title" name="title" placeholder="e.g., Assignment 1 - HTML & CSS" required>
+                <input type="text" id="title" name="title" placeholder="e.g., Assignment 1 - HTML & CSS Implementation" required>
             </div>
 
             <div class="form-group">
-                <label for="description">Assignment Description:</label>
-                <textarea id="description" name="description" placeholder="Enter assignment instructions..." required></textarea>
+                <label for="description">Assignment Description / Instructions:</label>
+                <textarea id="description" name="description" placeholder="Enter instructions for students..." required></textarea>
             </div>
 
             <div class="form-group">
@@ -148,7 +66,7 @@
                 <input type="number" id="totalMarks" name="totalMarks" min="1" max="100" placeholder="e.g., 20" required>
             </div>
 
-            <button type="submit" class="btn">Create & Publish Assignment</button>
+            <button type="submit" class="submitButton">Create & Publish Assignment</button>
         </fieldset>
     </form>
 
@@ -165,7 +83,7 @@
                 </select>
             </div>
 
-            <table>
+            <table border="1">
                 <thead>
                     <tr>
                         <th>Student ID</th>
@@ -173,7 +91,7 @@
                         <th>Submission Date</th>
                         <th>Submitted File</th>
                         <th>Marks Obtained</th>
-                        <th>Feedback</th>
+                        <th>Teacher Feedback</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -182,15 +100,15 @@
                         <td><?php echo htmlspecialchars($sub['id']); ?></td>
                         <td><?php echo htmlspecialchars($sub['name']); ?></td>
                         <td><?php echo htmlspecialchars($sub['date']); ?></td>
-                        <td><a href="#" target="_blank"><?php echo htmlspecialchars($sub['file']); ?></a></td>
-                        <td><input type="number" name="marks[]" min="0" max="20" placeholder="Marks"></td>
-                        <td><input type="text" name="feedback[]" placeholder="Good work!"></td>
+                        <td><a href="#" onclick="alert('Viewing file: <?php echo htmlspecialchars($sub['file']); ?>'); return false;"><?php echo htmlspecialchars($sub['file']); ?></a></td>
+                        <td><input type="number" name="marks[]" min="0" max="20" placeholder="Marks" value="<?php echo htmlspecialchars($sub['marks'] ?? ''); ?>"></td>
+                        <td><input type="text" name="feedback[]" placeholder="Good work!" value="<?php echo htmlspecialchars($sub['feedback'] ?? ''); ?>"></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
             <br>
-            <button type="submit" class="btn btn-publish">Save & Publish Marks</button>
+            <button type="submit" class="submitButton">Save & Publish Marks</button>
         </fieldset>
     </form>
 </div>

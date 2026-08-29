@@ -6,6 +6,9 @@ class StudentController {
     private $studentModel;
 
     public function __construct() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         $this->studentModel = new StudentModel();
     }
 
