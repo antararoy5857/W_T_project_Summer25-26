@@ -13,10 +13,6 @@
         <div class="nav-brand">🎓 Student Portal</div>
         <div class="nav-links">
             <a href="index.php?page=student" class="active">Student Panel</a>
-            <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'teacher'): ?>
-                <a href="index.php?page=teacher">Teacher Panel</a>
-                <a href="index.php?page=teacher_mod">Teacher Advanced</a>
-            <?php endif; ?>
         </div>
         <div class="nav-user">
             <span>Logged in as: <b><?php echo htmlspecialchars($_SESSION['user']['name'] ?? $info['name']); ?></b> (Student)</span>

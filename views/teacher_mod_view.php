@@ -15,7 +15,6 @@
     <div class="nav-links">
         <a href="index.php?page=teacher">Standard Panel</a>
         <a href="index.php?page=teacher_mod" class="active">Advanced Evaluation Panel</a>
-        <a href="index.php?page=student">Student View Preview</a>
     </div>
     <div class="nav-user">
         <span>Logged in as: <b><?php echo htmlspecialchars($_SESSION['user']['name'] ?? 'Faculty'); ?></b> (Teacher)</span>

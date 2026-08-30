@@ -57,29 +57,50 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-// Handle protected actions
-if ($action === 'create_assignment') {
+// Handle protected actions and views based on user role
+$userRole = $_SESSION['user']['role'] ?? 'student';
+
+if ($action === 'create_assignment' || $action === 'publish_marks') {
+    if ($userRole !== 'teacher') {
+        header('Location: index.php?page=student');
+        exit;
+    }
     $controller = new AssignmentController();
-    $controller->createAssignment();
-} else if ($action === 'publish_marks') {
-    $controller = new AssignmentController();
-    $controller->publishMarks();
+    if ($action === 'create_assignment') {
+        $controller->createAssignment();
+    } else {
+        $controller->publishMarks();
+    }
 } else if ($action === 'submit_assignment') {
+    if ($userRole !== 'student') {
+        header('Location: index.php?page=teacher');
+        exit;
+    }
     $controller = new AssignmentController();
     $controller->submitAssignment();
 } else {
-    // Handle protected page views
+    // Handle protected page views with strict role protection
     switch ($page) {
         case 'teacher':
-            $controller = new TeacherController();
-            $controller->index();
-            break;
         case 'teacher_mod':
+            if ($userRole !== 'teacher') {
+                header('Location: index.php?page=student');
+                exit;
+            }
             $controller = new TeacherController();
-            $controller->modification();
+            if ($page === 'teacher_mod') {
+                $controller->modification();
+            } else {
+                $controller->index();
+            }
             break;
+
         case 'student':
         default:
+            if ($userRole === 'teacher') {
+                header('Location: index.php?page=teacher');
+                exit;
+            }
             $controller = new StudentController();
             $controller->index();
             break;
