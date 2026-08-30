@@ -33,7 +33,9 @@ class AuthController {
                 $_SESSION['user'] = $user;
                 $_SESSION['flash_success'] = 'Welcome back, ' . htmlspecialchars($user['name']) . '!';
 
-                if ($user['role'] === 'teacher') {
+                if ($user['role'] === 'admin') {
+                    header('Location: index.php?page=admin');
+                } else if ($user['role'] === 'teacher') {
                     header('Location: index.php?page=teacher');
                 } else {
                     header('Location: index.php?page=student');

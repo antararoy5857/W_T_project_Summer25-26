@@ -41,6 +41,7 @@
             <select id="role" name="role" required>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
             </select>
         </div>
 
@@ -55,7 +56,8 @@
     <div class="demo-credentials">
         <strong>🔑 Quick Faculty Test Credentials:</strong><br>
         • <b>Student:</b> ID: <code>23-54523-3</code> | Pass: <code>123</code><br>
-        • <b>Teacher:</b> ID: <code>teacher</code> | Pass: <code>123</code>
+        • <b>Teacher:</b> ID: <code>teacher</code> | Pass: <code>123</code><br>
+        • <b>Admin:</b> ID: <code>admin</code> | Pass: <code>123</code>
     </div>
 </div>
 

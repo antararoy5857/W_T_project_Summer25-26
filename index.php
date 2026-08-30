@@ -8,6 +8,7 @@ require_once 'controllers/AuthController.php';
 require_once 'controllers/StudentController.php';
 require_once 'controllers/TeacherController.php';
 require_once 'controllers/AssignmentController.php';
+require_once 'controllers/AdminController.php';
 
 $page = $_GET['page'] ?? null;
 $action = $_GET['action'] ?? null;
@@ -43,7 +44,8 @@ if ($page === 'register') {
 } else if ($page === 'login') {
     if (isset($_SESSION['user'])) {
         $role = $_SESSION['user']['role'] ?? 'student';
-        header('Location: index.php?page=' . ($role === 'teacher' ? 'teacher' : 'student'));
+        $targetPage = ($role === 'admin') ? 'admin' : (($role === 'teacher') ? 'teacher' : 'student');
+        header('Location: index.php?page=' . $targetPage);
         exit;
     }
     $auth = new AuthController();
@@ -62,7 +64,7 @@ $userRole = $_SESSION['user']['role'] ?? 'student';
 
 if ($action === 'create_assignment' || $action === 'publish_marks') {
     if ($userRole !== 'teacher') {
-        header('Location: index.php?page=student');
+        header('Location: index.php?page=' . ($userRole === 'admin' ? 'admin' : 'student'));
         exit;
     }
     $controller = new AssignmentController();
@@ -73,18 +75,43 @@ if ($action === 'create_assignment' || $action === 'publish_marks') {
     }
 } else if ($action === 'submit_assignment') {
     if ($userRole !== 'student') {
-        header('Location: index.php?page=teacher');
+        header('Location: index.php?page=' . ($userRole === 'admin' ? 'admin' : 'teacher'));
         exit;
     }
     $controller = new AssignmentController();
     $controller->submitAssignment();
+} else if ($action === 'add_teacher') {
+    if ($userRole !== 'admin') {
+        header('Location: index.php?page=login');
+        exit;
+    }
+    $controller = new AdminController();
+    $controller->addTeacher();
+} else if ($action === 'setup_course') {
+    if ($userRole !== 'admin') {
+        header('Location: index.php?page=login');
+        exit;
+    }
+    $controller = new AdminController();
+    $controller->setupCourse();
 } else {
     // Handle protected page views with strict role protection
     switch ($page) {
+        case 'admin':
+            if ($userRole !== 'admin') {
+                $targetPage = ($userRole === 'teacher') ? 'teacher' : 'student';
+                header('Location: index.php?page=' . $targetPage);
+                exit;
+            }
+            $controller = new AdminController();
+            $controller->index();
+            break;
+
         case 'teacher':
         case 'teacher_mod':
             if ($userRole !== 'teacher') {
-                header('Location: index.php?page=student');
+                $targetPage = ($userRole === 'admin') ? 'admin' : 'student';
+                header('Location: index.php?page=' . $targetPage);
                 exit;
             }
             $controller = new TeacherController();
@@ -97,7 +124,10 @@ if ($action === 'create_assignment' || $action === 'publish_marks') {
 
         case 'student':
         default:
-            if ($userRole === 'teacher') {
+            if ($userRole === 'admin') {
+                header('Location: index.php?page=admin');
+                exit;
+            } else if ($userRole === 'teacher') {
                 header('Location: index.php?page=teacher');
                 exit;
             }
