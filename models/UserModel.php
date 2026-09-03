@@ -1,86 +1,46 @@
 <?php
 
+require_once __DIR__ . '/Database.php';
+
 class UserModel {
+    private $db;
+
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $this->initUsers();
-    }
-
-    private function initUsers() {
-        if (!isset($_SESSION['users'])) {
-            $_SESSION['users'] = [];
-        }
-
-        $defaultUsers = [
-            [
-                'username' => '23-54523-3',
-                'email' => 'shihab@gmail.com',
-                'name' => 'Md. Shihab Shikdar',
-                'id' => '23-54523-3',
-                'department' => 'Computer Science and Engineering',
-                'role' => 'student',
-                'phone' => '+880-171717155311',
-                'password' => '123'
-            ],
-            [
-                'username' => 'teacher',
-                'email' => 'teacher@aiub.edu',
-                'name' => 'Dr. Mahfuzur Rahman',
-                'id' => 'T-101',
-                'department' => 'Computer Science and Engineering',
-                'role' => 'teacher',
-                'phone' => '+880-1818181818',
-                'password' => '123'
-            ],
-            [
-                'username' => 'admin',
-                'email' => 'admin@aiub.edu',
-                'name' => 'System Administrator',
-                'id' => 'ADM-01',
-                'department' => 'Administration',
-                'role' => 'admin',
-                'phone' => '+880-1999999999',
-                'password' => '123'
-            ]
-        ];
-
-        foreach ($defaultUsers as $defUser) {
-            $exists = false;
-            foreach ($_SESSION['users'] as $u) {
-                if (strcasecmp($u['username'], $defUser['username']) === 0 || strcasecmp($u['email'], $defUser['email']) === 0) {
-                    $exists = true;
-                    break;
-                }
-            }
-            if (!$exists) {
-                $_SESSION['users'][] = $defUser;
-            }
-        }
+        $this->db = Database::getInstance()->getConnection();
     }
 
     public function authenticate($usernameOrEmail, $password, $role = null) {
         $usernameOrEmail = trim($usernameOrEmail);
-        foreach ($_SESSION['users'] as $user) {
-            $matchUser = (strcasecmp($user['username'], $usernameOrEmail) === 0 || strcasecmp($user['email'], $usernameOrEmail) === 0);
-            $matchPass = ($user['password'] === $password);
 
-            if ($matchUser && $matchPass) {
-                return $user;
-            }
+        if (!empty($role)) {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE (LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)) AND password = ? AND role = ?");
+            $stmt->bind_param("ssss", $usernameOrEmail, $usernameOrEmail, $password, $role);
+        } else {
+            $stmt = $this->db->prepare("SELECT * FROM users WHERE (LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)) AND password = ?");
+            $stmt->bind_param("sss", $usernameOrEmail, $usernameOrEmail, $password);
         }
-        return false;
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+        return $user ?: false;
     }
 
     public function getUserByUsernameOrEmail($identifier) {
         $identifier = trim($identifier);
-        foreach ($_SESSION['users'] as $user) {
-            if (strcasecmp($user['username'], $identifier) === 0 || strcasecmp($user['email'], $identifier) === 0) {
-                return $user;
-            }
-        }
-        return null;
+        $stmt = $this->db->prepare("SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)");
+        $stmt->bind_param("ss", $identifier, $identifier);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+        return $user ?: null;
     }
 
     public function registerUser($data) {
@@ -90,6 +50,7 @@ class UserModel {
         $role = trim($data['role'] ?? 'student');
         $department = trim($data['department'] ?? 'Computer Science');
         $password = $data['password'] ?? '';
+        $phone = trim($data['phone'] ?? '+880-1700000000');
 
         if (empty($username) || empty($email) || empty($password)) {
             return ['success' => false, 'message' => 'All required fields must be filled.'];
@@ -99,57 +60,86 @@ class UserModel {
             return ['success' => false, 'message' => 'User ID or Email already registered.'];
         }
 
-        $newUser = [
-            'username' => $username,
-            'email' => $email,
-            'name' => !empty($name) ? $name : $username,
-            'id' => $username,
-            'department' => $department,
-            'role' => strtolower($role) === 'teacher' ? 'teacher' : 'student',
-            'phone' => trim($data['phone'] ?? '+880-1700000000'),
-            'password' => $password
-        ];
+        $formattedName = !empty($name) ? $name : $username;
+        $userRole = strtolower($role) === 'teacher' ? 'teacher' : 'student';
 
-        $_SESSION['users'][] = $newUser;
-        return ['success' => true, 'message' => 'Registration successful! Please log in.'];
+        $stmt = $this->db->prepare("INSERT INTO users (username, email, name, id_code, department, role, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssss", $username, $email, $formattedName, $username, $department, $userRole, $phone, $password);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        if ($success) {
+            return ['success' => true, 'message' => 'Registration successful! Please log in.'];
+        }
+        return ['success' => false, 'message' => 'Failed to register user.'];
     }
 
     public function resetPassword($identifier, $newPassword) {
         $identifier = trim($identifier);
-        foreach ($_SESSION['users'] as $key => $user) {
-            if (strcasecmp($user['username'], $identifier) === 0 || strcasecmp($user['email'], $identifier) === 0) {
-                $_SESSION['users'][$key]['password'] = $newPassword;
-                return ['success' => true, 'message' => 'Password reset successfully! Log in with your new password.'];
-            }
+        $user = $this->getUserByUsernameOrEmail($identifier);
+        if (!$user) {
+            return ['success' => false, 'message' => 'User ID or Email not found.'];
         }
-        return ['success' => false, 'message' => 'User ID or Email not found.'];
+
+        $stmt = $this->db->prepare("UPDATE users SET password = ? WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)");
+        $stmt->bind_param("sss", $newPassword, $identifier, $identifier);
+        $success = $stmt->execute();
+        $stmt->close();
+
+        if ($success) {
+            return ['success' => true, 'message' => 'Password reset successfully! Log in with your new password.'];
+        }
+        return ['success' => false, 'message' => 'Failed to reset password.'];
     }
 
-    // --- Simple Admin Helpers ---
+    // --- Admin Helpers ---
     public function getTeachers() {
-        return array_filter($_SESSION['users'] ?? [], fn($u) => ($u['role'] ?? '') === 'teacher');
+        $result = $this->db->query("SELECT * FROM users WHERE role = 'teacher'");
+        $teachers = [];
+        while ($row = $result->fetch_assoc()) {
+            $teachers[] = $row;
+        }
+        return $teachers;
     }
 
     public function addTeacher($name, $email, $username) {
         if (!empty($name) && !empty($username)) {
-            $_SESSION['users'][] = ['username' => $username, 'email' => $email, 'name' => $name, 'id' => $username, 'department' => 'CSE', 'role' => 'teacher', 'password' => '123'];
+            $dept = 'CSE';
+            $role = 'teacher';
+            $pass = '123';
+            $phone = '+880-1800000000';
+            $stmt = $this->db->prepare("INSERT INTO users (username, email, name, id_code, department, role, phone, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssssss", $username, $email, $name, $username, $dept, $role, $phone, $pass);
+            $stmt->execute();
+            $stmt->close();
         }
     }
 
     public function addCourse($code, $name) {
         if (!empty($code) && !empty($name)) {
-            $_SESSION['courses'][] = ['code' => strtoupper($code), 'name' => $name, 'credit' => 3, 'semester' => 'Summer 2025-2026'];
+            $codeUpper = strtoupper($code);
+            $credit = 3;
+            $semester = 'Summer 2025-2026';
+            $stmt = $this->db->prepare("INSERT INTO courses (code, name, credit, semester) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
+            $stmt->bind_param("ssis", $codeUpper, $name, $credit, $semester);
+            $stmt->execute();
+            $stmt->close();
         }
     }
 
     public function getSystemReport() {
-        $users = $_SESSION['users'] ?? [];
+        $studentCnt = $this->db->query("SELECT COUNT(*) as cnt FROM users WHERE role = 'student'")->fetch_assoc()['cnt'] ?? 0;
+        $teacherCnt = $this->db->query("SELECT COUNT(*) as cnt FROM users WHERE role = 'teacher'")->fetch_assoc()['cnt'] ?? 0;
+        $courseCnt = $this->db->query("SELECT COUNT(*) as cnt FROM courses")->fetch_assoc()['cnt'] ?? 0;
+        $assignmentCnt = $this->db->query("SELECT COUNT(*) as cnt FROM assignments")->fetch_assoc()['cnt'] ?? 0;
+        $submissionCnt = $this->db->query("SELECT COUNT(*) as cnt FROM submissions")->fetch_assoc()['cnt'] ?? 0;
+
         return [
-            'students' => count(array_filter($users, fn($u) => ($u['role'] ?? '') === 'student')),
-            'teachers' => count(array_filter($users, fn($u) => ($u['role'] ?? '') === 'teacher')),
-            'courses' => count($_SESSION['courses'] ?? []),
-            'assignments' => count($_SESSION['assignments'] ?? []),
-            'submissions' => count($_SESSION['submissions'] ?? [])
+            'students' => (int)$studentCnt,
+            'teachers' => (int)$teacherCnt,
+            'courses' => (int)$courseCnt,
+            'assignments' => (int)$assignmentCnt,
+            'submissions' => (int)$submissionCnt
         ];
     }
 }

@@ -1,102 +1,62 @@
 <?php
 
+require_once __DIR__ . '/Database.php';
+
 class TeacherModel {
+    private $db;
+
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $this->initDefaultData();
-    }
-
-    private function initDefaultData() {
-        if (!isset($_SESSION['courses'])) {
-            $_SESSION['courses'] = [
-                ['code' => 'CSC3215', 'name' => 'CSC 3215: Web Technologies'],
-                ['code' => 'CSC2210', 'name' => 'CSC 2210: Object Oriented Programming'],
-                ['code' => 'CSC3105', 'name' => 'CSC 3105: Database Systems']
-            ];
-        }
-
-        if (!isset($_SESSION['submissions'])) {
-            $_SESSION['submissions'] = [
-                [
-                    'id' => '23-54523-3',
-                    'name' => 'Md. Shihab Shikdar',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '2026-05-10',
-                    'status' => 'On Time',
-                    'file' => 'view_submission.pdf',
-                    'marks' => 18,
-                    'feedback' => 'Good Work',
-                    'is_graded' => true,
-                    'resubmit_allowed' => false
-                ],
-                [
-                    'id' => '24-56434-1',
-                    'name' => 'Md Momen Sha',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '2026-05-12',
-                    'status' => 'Late Submission',
-                    'file' => 'assignment1_momen.zip',
-                    'marks' => null,
-                    'feedback' => '',
-                    'is_graded' => false,
-                    'resubmit_allowed' => false
-                ],
-                [
-                    'id' => '22-48652-3',
-                    'name' => 'Antara Roy',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '2026-05-11',
-                    'status' => 'On Time',
-                    'file' => 'antara_web_task.zip',
-                    'marks' => 19,
-                    'feedback' => 'Excellent design!',
-                    'is_graded' => true,
-                    'resubmit_allowed' => false
-                ],
-                [
-                    'id' => '22-99999-3',
-                    'name' => 'Tanvir Ahmed',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '—',
-                    'status' => 'Pending',
-                    'file' => 'Not Submitted',
-                    'marks' => null,
-                    'feedback' => '',
-                    'is_graded' => false,
-                    'resubmit_allowed' => false
-                ]
-            ];
-        }
+        $this->db = Database::getInstance()->getConnection();
     }
 
     public function getCourses() {
-        return $_SESSION['courses'];
+        $result = $this->db->query("SELECT * FROM courses ORDER BY id ASC");
+        $courses = [];
+        while ($row = $result->fetch_assoc()) {
+            $courses[] = $row;
+        }
+        return $courses;
     }
 
     public function getSubmissions() {
-        return $_SESSION['submissions'];
+        $result = $this->db->query("SELECT * FROM submissions ORDER BY id ASC");
+        $submissions = [];
+        while ($row = $result->fetch_assoc()) {
+            $submissions[] = [
+                'submission_row_id' => $row['id'],
+                'id' => $row['student_id'],
+                'name' => $row['student_name'],
+                'assignment_id' => $row['assignment_id'],
+                'assignment_title' => $row['assignment_title'],
+                'date' => $row['submission_date'],
+                'status' => $row['status'],
+                'file' => $row['file'],
+                'marks' => $row['marks'],
+                'feedback' => $row['feedback'],
+                'is_graded' => (bool)$row['is_graded'],
+                'resubmit_allowed' => (bool)$row['resubmit_allowed']
+            ];
+        }
+        return $submissions;
     }
 
     public function publishMarks($marksData, $feedbackData, $resubmitData = []) {
-        if (!isset($_SESSION['submissions'])) return false;
+        $submissions = $this->getSubmissions();
 
-        foreach ($_SESSION['submissions'] as $index => &$sub) {
-            if (isset($marksData[$index]) && $marksData[$index] !== '') {
-                $sub['marks'] = (float)$marksData[$index];
-                $sub['is_graded'] = true;
-            }
-            if (isset($feedbackData[$index])) {
-                $sub['feedback'] = trim($feedbackData[$index]);
-            }
-            if (in_array($sub['id'], $resubmitData)) {
-                $sub['resubmit_allowed'] = true;
-            }
+        foreach ($submissions as $index => $sub) {
+            $rowId = $sub['submission_row_id'];
+            $newMarks = isset($marksData[$index]) && $marksData[$index] !== '' ? (float)$marksData[$index] : $sub['marks'];
+            $isGraded = isset($marksData[$index]) && $marksData[$index] !== '' ? 1 : ($sub['is_graded'] ? 1 : 0);
+            $newFeedback = isset($feedbackData[$index]) ? trim($feedbackData[$index]) : $sub['feedback'];
+            $allowResubmit = in_array($sub['id'], $resubmitData) ? 1 : 0;
+
+            $stmt = $this->db->prepare("UPDATE submissions SET marks = ?, feedback = ?, is_graded = ?, resubmit_allowed = ? WHERE id = ?");
+            $stmt->bind_param("dsiii", $newMarks, $newFeedback, $isGraded, $allowResubmit, $rowId);
+            $stmt->execute();
+            $stmt->close();
         }
         return true;
     }

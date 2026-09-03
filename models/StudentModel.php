@@ -1,78 +1,15 @@
 <?php
 
+require_once __DIR__ . '/Database.php';
+
 class StudentModel {
+    private $db;
+
     public function __construct() {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        $this->initDefaultData();
-    }
-
-    private function initDefaultData() {
-        if (!isset($_SESSION['assignments'])) {
-            $_SESSION['assignments'] = [
-                ['id' => 1, 'title' => 'Responsive Web Design', 'course' => 'CSC 3215: Web Technologies', 'course_code' => 'CSC3215', 'deadline' => '2026-08-20', 'marks' => 20, 'status' => 'Pending', 'description' => 'Create a fully responsive layout using flexbox and grid.'],
-                ['id' => 2, 'title' => 'PHP Form Validation', 'course' => 'CSC 3215: Web Technologies', 'course_code' => 'CSC3215', 'deadline' => '2026-08-25', 'marks' => 20, 'status' => 'Submitted', 'description' => 'Implement server-side & client-side PHP form validation.'],
-                ['id' => 3, 'title' => 'Database Schema Design', 'course' => 'CSC 3105: Database Systems', 'course_code' => 'CSC3105', 'deadline' => '2026-08-28', 'marks' => 15, 'status' => 'Pending', 'description' => 'Design ER diagram and normalized relational tables.']
-            ];
-        }
-
-        if (!isset($_SESSION['submissions'])) {
-            $_SESSION['submissions'] = [
-                [
-                    'id' => '23-54523-3',
-                    'name' => 'Md. Shihab Shikdar',
-                    'assignment_id' => 2,
-                    'assignment_title' => 'PHP Form Validation',
-                    'date' => '2026-08-24',
-                    'status' => 'On Time',
-                    'file' => 'shihab_php_val.zip',
-                    'marks' => 18,
-                    'feedback' => 'Good Work',
-                    'is_graded' => true,
-                    'resubmit_allowed' => false
-                ],
-                [
-                    'id' => '24-56434-1',
-                    'name' => 'Md Momen Sha',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '2026-08-22',
-                    'status' => 'Late Submission',
-                    'file' => 'assignment1_momen.zip',
-                    'marks' => null,
-                    'feedback' => '',
-                    'is_graded' => false,
-                    'resubmit_allowed' => false
-                ],
-                [
-                    'id' => '22-48652-3',
-                    'name' => 'Antara Roy',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '2026-08-19',
-                    'status' => 'On Time',
-                    'file' => 'antara_web_task.zip',
-                    'marks' => 19,
-                    'feedback' => 'Excellent design!',
-                    'is_graded' => true,
-                    'resubmit_allowed' => false
-                ],
-                [
-                    'id' => '22-99999-3',
-                    'name' => 'Tanvir Ahmed',
-                    'assignment_id' => 1,
-                    'assignment_title' => 'Responsive Web Design',
-                    'date' => '—',
-                    'status' => 'Pending',
-                    'file' => 'Not Submitted',
-                    'marks' => null,
-                    'feedback' => '',
-                    'is_graded' => false,
-                    'resubmit_allowed' => false
-                ]
-            ];
-        }
+        $this->db = Database::getInstance()->getConnection();
     }
 
     public function getStudentInfo() {
@@ -90,19 +27,23 @@ class StudentModel {
     }
 
     public function getDashboardStats() {
-        $studentId = $_SESSION['user']['id'] ?? '23-54523-3';
-        $total = count($_SESSION['assignments']);
-        $submitted = 0;
-        $published = 0;
+        $studentUser = $this->getStudentInfo();
+        $studentId = $studentUser['id_code'] ?? ($studentUser['id'] ?? '23-54523-3');
 
-        foreach ($_SESSION['submissions'] as $sub) {
-            if ($sub['id'] === $studentId && $sub['file'] !== 'Not Submitted') {
-                $submitted++;
-                if ($sub['is_graded']) {
-                    $published++;
-                }
-            }
-        }
+        $totalRes = $this->db->query("SELECT COUNT(*) as cnt FROM assignments");
+        $total = (int)($totalRes->fetch_assoc()['cnt'] ?? 0);
+
+        $stmtSub = $this->db->prepare("SELECT COUNT(*) as cnt FROM submissions WHERE student_id = ? AND file != 'Not Submitted'");
+        $stmtSub->bind_param("s", $studentId);
+        $stmtSub->execute();
+        $submitted = (int)($stmtSub->get_result()->fetch_assoc()['cnt'] ?? 0);
+        $stmtSub->close();
+
+        $stmtPub = $this->db->prepare("SELECT COUNT(*) as cnt FROM submissions WHERE student_id = ? AND is_graded = 1");
+        $stmtPub->bind_param("s", $studentId);
+        $stmtPub->execute();
+        $published = (int)($stmtPub->get_result()->fetch_assoc()['cnt'] ?? 0);
+        $stmtPub->close();
 
         $pending = max(0, $total - $submitted);
 
@@ -115,78 +56,90 @@ class StudentModel {
     }
 
     public function getAssignments() {
-        $studentId = $_SESSION['user']['id'] ?? '23-54523-3';
-        $assignments = $_SESSION['assignments'];
+        $studentUser = $this->getStudentInfo();
+        $studentId = $studentUser['id_code'] ?? ($studentUser['id'] ?? '23-54523-3');
 
-        // Determine submission status per assignment for current student
-        foreach ($assignments as &$asn) {
-            $asn['status'] = 'Pending';
-            foreach ($_SESSION['submissions'] as $sub) {
-                if ($sub['id'] === $studentId && strcasecmp($sub['assignment_title'], $asn['title']) === 0 && $sub['file'] !== 'Not Submitted') {
-                    $asn['status'] = 'Submitted';
-                    break;
-                }
+        $res = $this->db->query("SELECT * FROM assignments ORDER BY id ASC");
+        $assignments = [];
+
+        while ($row = $res->fetch_assoc()) {
+            $row['status'] = 'Pending';
+            $stmt = $this->db->prepare("SELECT * FROM submissions WHERE student_id = ? AND LOWER(assignment_title) = LOWER(?) AND file != 'Not Submitted'");
+            $stmt->bind_param("ss", $studentId, $row['title']);
+            $stmt->execute();
+            $subRes = $stmt->get_result();
+            if ($subRes->num_rows > 0) {
+                $row['status'] = 'Submitted';
             }
+            $stmt->close();
+
+            $assignments[] = $row;
         }
+
         return $assignments;
     }
 
     public function getResults() {
-        $studentId = $_SESSION['user']['id'] ?? '23-54523-3';
-        $results = [];
+        $studentUser = $this->getStudentInfo();
+        $studentId = $studentUser['id_code'] ?? ($studentUser['id'] ?? '23-54523-3');
 
-        foreach ($_SESSION['submissions'] as $sub) {
-            if ($sub['id'] === $studentId && $sub['is_graded']) {
-                $totalMarks = 20;
-                foreach ($_SESSION['assignments'] as $asn) {
-                    if (strcasecmp($asn['title'], $sub['assignment_title']) === 0) {
-                        $totalMarks = $asn['marks'];
-                        break;
-                    }
-                }
-                $results[] = [
-                    'title' => $sub['assignment_title'],
-                    'course' => 'Web Technology',
-                    'obtained' => $sub['marks'],
-                    'total' => $totalMarks,
-                    'feedback' => !empty($sub['feedback']) ? $sub['feedback'] : 'Graded',
-                    'status' => 'Published'
-                ];
-            }
+        $stmt = $this->db->prepare("SELECT s.*, a.course, a.marks as total_marks FROM submissions s LEFT JOIN assignments a ON LOWER(s.assignment_title) = LOWER(a.title) WHERE s.student_id = ? AND s.is_graded = 1");
+        $stmt->bind_param("s", $studentId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $results = [];
+        while ($row = $res->fetch_assoc()) {
+            $results[] = [
+                'title' => $row['assignment_title'],
+                'course' => $row['course'] ?? 'Web Technology',
+                'obtained' => $row['marks'],
+                'total' => $row['total_marks'] ?? 20,
+                'feedback' => !empty($row['feedback']) ? $row['feedback'] : 'Graded',
+                'status' => 'Published'
+            ];
         }
+        $stmt->close();
         return $results;
     }
 
     public function submitAssignment($assignmentTitle, $fileName, $comment = '') {
-        $studentUser = $_SESSION['user'] ?? null;
-        $studentId = $studentUser['id'] ?? '23-54523-3';
+        $studentUser = $this->getStudentInfo();
+        $studentId = $studentUser['id_code'] ?? ($studentUser['id'] ?? '23-54523-3');
         $studentName = $studentUser['name'] ?? 'Md. Shihab Shikdar';
+        $today = date('Y-m-d');
 
-        $found = false;
-        foreach ($_SESSION['submissions'] as &$sub) {
-            if ($sub['id'] === $studentId && strcasecmp($sub['assignment_title'], $assignmentTitle) === 0) {
-                $sub['file'] = $fileName;
-                $sub['date'] = date('Y-m-d');
-                $sub['status'] = 'On Time';
-                $found = true;
-                break;
-            }
+        // Find assignment ID if available
+        $assignmentId = 1;
+        $stmtAssn = $this->db->prepare("SELECT id FROM assignments WHERE LOWER(title) = LOWER(?) LIMIT 1");
+        $stmtAssn->bind_param("s", $assignmentTitle);
+        $stmtAssn->execute();
+        $assnRes = $stmtAssn->get_result()->fetch_assoc();
+        if ($assnRes) {
+            $assignmentId = (int)$assnRes['id'];
         }
+        $stmtAssn->close();
 
-        if (!$found) {
-            $_SESSION['submissions'][] = [
-                'id' => $studentId,
-                'name' => $studentName,
-                'assignment_id' => 1,
-                'assignment_title' => $assignmentTitle,
-                'date' => date('Y-m-d'),
-                'status' => 'On Time',
-                'file' => $fileName,
-                'marks' => null,
-                'feedback' => $comment,
-                'is_graded' => false,
-                'resubmit_allowed' => false
-            ];
+        // Check if submission exists
+        $stmtCheck = $this->db->prepare("SELECT id FROM submissions WHERE student_id = ? AND LOWER(assignment_title) = LOWER(?)");
+        $stmtCheck->bind_param("ss", $studentId, $assignmentTitle);
+        $stmtCheck->execute();
+        $existing = $stmtCheck->get_result()->fetch_assoc();
+        $stmtCheck->close();
+
+        if ($existing) {
+            $stmtUp = $this->db->prepare("UPDATE submissions SET file = ?, submission_date = ?, status = 'On Time', feedback = ? WHERE id = ?");
+            $stmtUp->bind_param("sssi", $fileName, $today, $comment, $existing['id']);
+            $stmtUp->execute();
+            $stmtUp->close();
+        } else {
+            $status = 'On Time';
+            $isGraded = 0;
+            $resubmitAllowed = 0;
+            $stmtIns = $this->db->prepare("INSERT INTO submissions (student_id, student_name, assignment_id, assignment_title, submission_date, status, file, feedback, is_graded, resubmit_allowed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmtIns->bind_param("ssisssssii", $studentId, $studentName, $assignmentId, $assignmentTitle, $today, $status, $fileName, $comment, $isGraded, $resubmitAllowed);
+            $stmtIns->execute();
+            $stmtIns->close();
         }
 
         return true;
