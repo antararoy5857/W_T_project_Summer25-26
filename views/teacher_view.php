@@ -80,9 +80,10 @@
                     <option value="1">Assignment 1 - HTML & CSS (Web Technologies)</option>
                     <option value="2">Assignment 2 - PHP Basics (Web Technologies)</option>
                 </select>
+                <button type="button" id="btnLoadSubmissionsAjax" style="margin-left: 10px; cursor: pointer; padding: 4px 10px;">Load Submissions (AJAX)</button>
             </div>
 
-            <table border="1">
+            <table border="1" id="teacherSubmissionsTable">
                 <thead>
                     <tr>
                         <th>Student ID</th>

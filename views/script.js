@@ -95,6 +95,77 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     });
+
+    // --- AJAX Request 1: Registration Email Check ---
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('input', function () {
+            const emailVal = this.value.trim();
+            const errDiv = document.getElementById('emailError');
+            if (!emailVal) {
+                if (errDiv) errDiv.style.display = 'none';
+                return;
+            }
+            fetch('index.php?action=check_email&email=' + encodeURIComponent(emailVal))
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        if (errDiv) {
+                            errDiv.innerText = 'email already exist try another one';
+                            errDiv.style.display = 'block';
+                        }
+                    } else {
+                        if (errDiv) errDiv.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error(err));
+        });
+    }
+
+    // --- AJAX Request 2: Teacher Submissions Loader ---
+    const btnLoadSubmissions = document.getElementById('btnLoadSubmissionsAjax');
+    if (btnLoadSubmissions) {
+        btnLoadSubmissions.addEventListener('click', function () {
+            fetch('index.php?action=get_submissions_ajax')
+                .then(res => res.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#teacherSubmissionsTable tbody');
+                    if (!tableBody) return;
+                    tableBody.innerHTML = '';
+                    data.forEach(sub => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${sub.id}</td>
+                            <td>${sub.name}</td>
+                            <td>${sub.date}</td>
+                            <td><a href="#" onclick="alert('Viewing file: ${sub.file}'); return false;">${sub.file}</a></td>
+                            <td><input type="number" name="marks[]" min="0" max="20" placeholder="Marks" value="${sub.marks !== null ? sub.marks : ''}"></td>
+                            <td><input type="text" name="feedback[]" placeholder="Good work!" value="${sub.feedback ? sub.feedback : ''}"></td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+                    alert('Submissions refreshed live via AJAX!');
+                })
+                .catch(err => console.error(err));
+        });
+    }
+
+    // --- AJAX Request 3: Student Stats Refresher ---
+    const btnRefreshStats = document.getElementById('btnRefreshStats');
+    if (btnRefreshStats) {
+        btnRefreshStats.addEventListener('click', function () {
+            fetch('index.php?action=get_student_stats_ajax')
+                .then(res => res.json())
+                .then(data => {
+                    if (document.getElementById('statTotal')) document.getElementById('statTotal').innerText = data.total;
+                    if (document.getElementById('statSubmitted')) document.getElementById('statSubmitted').innerText = data.submitted;
+                    if (document.getElementById('statPending')) document.getElementById('statPending').innerText = data.pending;
+                    if (document.getElementById('statPublished')) document.getElementById('statPublished').innerText = data.results_published;
+                    alert('Student Dashboard Stats refreshed live via AJAX!');
+                })
+                .catch(err => console.error(err));
+        });
+    }
 });
 
 // 6. Filter Submissions Table (Teacher Panel)

@@ -30,6 +30,25 @@ if ($action === 'login') {
     $auth = new AuthController();
     $auth->logout();
     exit;
+} else if ($action === 'check_email') {
+    header('Content-Type: application/json');
+    require_once 'models/UserModel.php';
+    $userModel = new UserModel();
+    $user = $userModel->getUserByUsernameOrEmail($_GET['email'] ?? '');
+    echo json_encode(['exists' => $user ? true : false]);
+    exit;
+} else if ($action === 'get_submissions_ajax') {
+    header('Content-Type: application/json');
+    require_once 'models/TeacherModel.php';
+    $teacherModel = new TeacherModel();
+    echo json_encode($teacherModel->getSubmissions());
+    exit;
+} else if ($action === 'get_student_stats_ajax') {
+    header('Content-Type: application/json');
+    require_once 'models/StudentModel.php';
+    $studentModel = new StudentModel();
+    echo json_encode($studentModel->getDashboardStats());
+    exit;
 }
 
 // Public auth views

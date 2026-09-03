@@ -73,7 +73,7 @@
 
         <!-- Dashboard Stats -->
         <fieldset id="dashboard">
-            <legend><b>Dashboard Stats</b></legend>
+            <legend><b>Dashboard Stats</b> <button type="button" id="btnRefreshStats" style="margin-left: 10px; cursor: pointer; padding: 2px 8px;">Refresh (AJAX)</button></legend>
             <table border="1" cellpadding="12" width="100%">
                 <tr>
                     <th>Total Assignments</th>
@@ -82,10 +82,10 @@
                     <th>Results Published</th>
                 </tr>
                 <tr>
-                    <td align="center"><b><?php echo $stats['total']; ?></b></td>
-                    <td align="center"><span class="submitted"><?php echo $stats['submitted']; ?></span></td>
-                    <td align="center"><span class="pending"><?php echo $stats['pending']; ?></span></td>
-                    <td align="center"><span class="result"><?php echo $stats['results_published']; ?></span></td>
+                    <td align="center"><b id="statTotal"><?php echo $stats['total']; ?></b></td>
+                    <td align="center"><span class="submitted" id="statSubmitted"><?php echo $stats['submitted']; ?></span></td>
+                    <td align="center"><span class="pending" id="statPending"><?php echo $stats['pending']; ?></span></td>
+                    <td align="center"><span class="result" id="statPublished"><?php echo $stats['results_published']; ?></span></td>
                 </tr>
             </table>
         </fieldset>

@@ -31,6 +31,7 @@
         <div class="form-group">
             <label for="email">Email Address:</label>
             <input type="email" id="email" name="email" placeholder="e.g. student@gmail.com" required>
+            <div id="emailError" style="color: red; font-size: 13px; margin-top: 5px; display: none;">email already exist try another one</div>
         </div>
 
         <div class="form-group">
