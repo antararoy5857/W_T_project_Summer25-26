@@ -125,6 +125,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- AJAX Request: Registration User ID Check (XHR) ---
+    const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function () {
+            const usernameVal = this.value.trim();
+            const errDiv = document.getElementById('usernameError');
+            if (!usernameVal) {
+                if (errDiv) errDiv.style.display = 'none';
+                return;
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'index.php?action=check_username&username=' + encodeURIComponent(usernameVal), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    if (data.exists) {
+                        if (errDiv) {
+                            errDiv.innerText = 'id already exist';
+                            errDiv.style.display = 'block';
+                        }
+                    } else {
+                        if (errDiv) errDiv.style.display = 'none';
+                    }
+                }
+            };
+            xhr.send();
+        });
+    }
+
     // --- AJAX Request 2: Teacher Submissions Loader (XHR) ---
     const btnLoadSubmissions = document.getElementById('btnLoadSubmissionsAjax');
     if (btnLoadSubmissions) {

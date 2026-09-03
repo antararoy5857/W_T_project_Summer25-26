@@ -26,6 +26,7 @@
         <div class="form-group">
             <label for="username">User ID / Student ID / Teacher ID:</label>
             <input type="text" id="username" name="username" placeholder="e.g. 23-99999-3" required>
+            <div id="usernameError" style="color: red; font-size: 13px; margin-top: 5px; display: none;">id already exist</div>
         </div>
 
         <div class="form-group">

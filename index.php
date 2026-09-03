@@ -37,6 +37,13 @@ if ($action === 'login') {
     $user = $userModel->getUserByUsernameOrEmail($_GET['email'] ?? '');
     echo json_encode(['exists' => $user ? true : false]);
     exit;
+} else if ($action === 'check_username') {
+    header('Content-Type: application/json');
+    require_once 'models/UserModel.php';
+    $userModel = new UserModel();
+    $user = $userModel->getUserByUsernameOrEmail($_GET['username'] ?? '');
+    echo json_encode(['exists' => $user ? true : false]);
+    exit;
 } else if ($action === 'get_submissions_ajax') {
     header('Content-Type: application/json');
     require_once 'models/TeacherModel.php';
