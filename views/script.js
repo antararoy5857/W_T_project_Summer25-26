@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // --- AJAX Request 1: Registration Email Check ---
+    // --- AJAX Request 1: Registration Email Check (XHR) ---
     const emailInput = document.getElementById('email');
     if (emailInput) {
         emailInput.addEventListener('input', function () {
@@ -106,9 +106,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (errDiv) errDiv.style.display = 'none';
                 return;
             }
-            fetch('index.php?action=check_email&email=' + encodeURIComponent(emailVal))
-                .then(res => res.json())
-                .then(data => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'index.php?action=check_email&email=' + encodeURIComponent(emailVal), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
                     if (data.exists) {
                         if (errDiv) {
                             errDiv.innerText = 'email already exist try another one';
@@ -117,22 +119,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else {
                         if (errDiv) errDiv.style.display = 'none';
                     }
-                })
-                .catch(err => console.error(err));
+                }
+            };
+            xhr.send();
         });
     }
 
-    // --- AJAX Request 2: Teacher Submissions Loader ---
+    // --- AJAX Request 2: Teacher Submissions Loader (XHR) ---
     const btnLoadSubmissions = document.getElementById('btnLoadSubmissionsAjax');
     if (btnLoadSubmissions) {
         btnLoadSubmissions.addEventListener('click', function () {
-            fetch('index.php?action=get_submissions_ajax')
-                .then(res => res.json())
-                .then(data => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'index.php?action=get_submissions_ajax', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
                     const tableBody = document.querySelector('#teacherSubmissionsTable tbody');
                     if (!tableBody) return;
                     tableBody.innerHTML = '';
-                    data.forEach(sub => {
+                    data.forEach(function (sub) {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>${sub.id}</td>
@@ -144,26 +149,30 @@ document.addEventListener('DOMContentLoaded', function () {
                         `;
                         tableBody.appendChild(tr);
                     });
-                    alert('Submissions refreshed live via AJAX!');
-                })
-                .catch(err => console.error(err));
+                    alert('Submissions refreshed live via XHR AJAX!');
+                }
+            };
+            xhr.send();
         });
     }
 
-    // --- AJAX Request 3: Student Stats Refresher ---
+    // --- AJAX Request 3: Student Stats Refresher (XHR) ---
     const btnRefreshStats = document.getElementById('btnRefreshStats');
     if (btnRefreshStats) {
         btnRefreshStats.addEventListener('click', function () {
-            fetch('index.php?action=get_student_stats_ajax')
-                .then(res => res.json())
-                .then(data => {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'index.php?action=get_student_stats_ajax', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
                     if (document.getElementById('statTotal')) document.getElementById('statTotal').innerText = data.total;
                     if (document.getElementById('statSubmitted')) document.getElementById('statSubmitted').innerText = data.submitted;
                     if (document.getElementById('statPending')) document.getElementById('statPending').innerText = data.pending;
                     if (document.getElementById('statPublished')) document.getElementById('statPublished').innerText = data.results_published;
-                    alert('Student Dashboard Stats refreshed live via AJAX!');
-                })
-                .catch(err => console.error(err));
+                    alert('Student Dashboard Stats refreshed live via XHR AJAX!');
+                }
+            };
+            xhr.send();
         });
     }
 });
